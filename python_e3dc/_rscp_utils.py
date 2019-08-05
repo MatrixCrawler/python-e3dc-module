@@ -33,7 +33,10 @@ class RSCPUtils:
         frame += struct.pack(self._FRAME_CRC_FORMAT, checksum)
         return frame
 
-    def encode_data(self, tag_name, type_name=None, data=None):
+    def encode_data(self, payload: tuple):
+        tag_name = payload[0]
+        type_name = payload[1]
+        data = payload[2]
         pack_format = ""
         tag_hex_code = self.rscp_lib.get_hex_code(tag_name)
         type_hex_code = self.rscp_lib.get_data_type_hex(type_name)
@@ -120,7 +123,7 @@ class RSCPUtils:
         elif data_type_name in self.rscp_lib.data_types_variable:
             data_format = "<" + str(data_length) + self.rscp_lib.data_types_variable[data_type_name]
         else:
-            raise RSCPDataError("Unknown data type",logger)
+            raise RSCPDataError("Unknown data type", logger)
 
         value = struct.unpack(data_format, data[data_header_size:data_header_size + struct.calcsize(data_format)])[0]
         return (data_tag_name, data_type_name, value), data_header_size + struct.calcsize(data_format)
@@ -130,7 +133,7 @@ class RSCPUtils:
             frame_data_without_crc = frame_data[:-struct.calcsize("<" + self._FRAME_CRC_FORMAT)]
             calculated_crc = libscrc.crc32(frame_data_without_crc) % (1 << 32)
             if calculated_crc != crc:
-                raise RSCPFrameError("CRC32 not valid",logger)
+                raise RSCPFrameError("CRC32 not valid", logger)
 
     def _endian_swap_uint16(self, val):
         return struct.unpack("<H", struct.pack(">H", val))[0]

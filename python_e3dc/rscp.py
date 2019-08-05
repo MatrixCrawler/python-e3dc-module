@@ -3,6 +3,7 @@ import socket
 
 from python_e3dc._rscp_encrypt_decrypt import RSCPEncryptDecrypt
 from python_e3dc._rscp_exceptions import RSCPAuthenticationError, RSCPCommunicationError
+from python_e3dc._rscp_utils import RSCPUtils
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class RSCP:
         self.ip = ip
         self.socket = None
 
-    def send_request(self, message):
+    def send_request(self, message: tuple):
         self._send(message)
         response = self._receive()
         if response[1] == 'Error':
@@ -38,3 +39,9 @@ class RSCP:
     def _disconnect(self):
         self.socket.close()
         self.socket = None
+
+    def _send(self, message):
+        rscp_utils = RSCPUtils()
+        prepared_data = rscp_utils.encode_frame(rscp_utils.encode_data(message))
+        encrypted_data = self.encrypt_decrypt.encrypt(prepared_data)
+        self.socket.send(encrypted_data)
