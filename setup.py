@@ -17,7 +17,7 @@ setup(
     author_email='johannes.brunswicker@gmail.com',
     description='',
     long_description=read('README.md'),
-    install_requires=['py3rijndael', 'libscrc'],
+    install_requires=['py3rijndael', 'libscrc','pytest'],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "License :: OSI Approved :: MIT License",

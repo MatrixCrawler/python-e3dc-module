@@ -5,11 +5,12 @@ import libscrc
 import pytest
 
 from python_e3dc._rscp_lib import RSCPLib
-from python_e3dc.rscp import RSCP, RSCPFrameError
+from python_e3dc._rscp_utils import RSCPUtils
+from python_e3dc._rscp_exceptions import RSCPFrameError
 
 
 def test_decode_data_returns_correct_value():
-    rscp = RSCP()
+    rscp = RSCPUtils()
     hex_ = "e3dc" + \
            "1010" + \
            int.to_bytes(1564732130, length=8, byteorder=sys.byteorder).hex() + \
@@ -26,7 +27,7 @@ def test_decode_data_returns_correct_value():
 
 
 def test_decode_data_raises_checksum_exception():
-    rscp = RSCP()
+    rscp = RSCPUtils()
     hex_ = "e3dc" + \
            "1010" + \
            int.to_bytes(1564732130, length=8, byteorder=sys.byteorder).hex() + \
@@ -40,7 +41,7 @@ def test_decode_data_raises_checksum_exception():
 
 
 def test_decode_frame_raises_no_exception():
-    rscp = RSCP()
+    rscp = RSCPUtils()
     hex_ = "e3dc" + \
            "1010" + \
            int.to_bytes(1564732130, length=8, byteorder=sys.byteorder).hex() + \
@@ -53,7 +54,7 @@ def test_decode_frame_raises_no_exception():
     assert timestamp == 1564827097.295
 
 def test_encode_frame_returns_correct_frame():
-    rscp = RSCP()
+    rscp = RSCPUtils()
 
 
     # print(complete_hex)
