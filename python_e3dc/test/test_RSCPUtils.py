@@ -1,12 +1,12 @@
 import struct
 import sys
+import zlib
 
-import libscrc
 import pytest
 
+from python_e3dc._rscp_exceptions import RSCPFrameError
 from python_e3dc._rscp_lib import RSCPLib
 from python_e3dc._rscp_utils import RSCPUtils
-from python_e3dc._rscp_exceptions import RSCPFrameError
 
 
 def test_decode_data_returns_correct_value():
@@ -17,7 +17,7 @@ def test_decode_data_returns_correct_value():
            int.to_bytes(94967295, length=4, byteorder=sys.byteorder).hex() + \
            int.to_bytes(11, length=2, byteorder=sys.byteorder).hex() + \
            "01000001" + "07" + struct.pack("<H", 4).hex() + struct.pack("<I", 98562).hex()
-    checksum = libscrc.crc32(bytes.fromhex(hex_))
+    checksum = zlib.crc32(bytes.fromhex(hex_))
     complete_hex = hex_ + int.to_bytes(checksum, length=4, byteorder=sys.byteorder).hex()
     result, size = rscp.decode_data(bytes.fromhex(complete_hex))
     rscp_lib = RSCPLib()
@@ -48,14 +48,14 @@ def test_decode_frame_raises_no_exception():
            int.to_bytes(94967295, length=4, byteorder=sys.byteorder).hex() + \
            int.to_bytes(256, length=2, byteorder=sys.byteorder).hex() + \
            bytearray(256).hex()
-    checksum = libscrc.crc32(bytes.fromhex(hex_))
+    checksum = zlib.crc32(bytes.fromhex(hex_))
     complete_hex = hex_ + int.to_bytes(checksum, length=4, byteorder=sys.byteorder).hex()
     data, timestamp = rscp._decode_frame(bytes.fromhex(complete_hex))
     assert timestamp == 1564827097.295
 
+
 def test_encode_frame_returns_correct_frame():
     rscp = RSCPUtils()
-
 
     # print(complete_hex)
     # key = bytes("This is a key".ljust(32, "\xff"), encoding="latin_1")

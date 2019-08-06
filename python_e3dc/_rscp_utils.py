@@ -2,8 +2,7 @@ import logging
 import math
 import struct
 import time
-
-import libscrc
+import zlib
 
 from python_e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
 from python_e3dc._rscp_lib import RSCPLib
@@ -29,7 +28,7 @@ class RSCPUtils:
         length = len(data)
         frame = struct.pack(self._FRAME_HEADER_FORMAT + str(length) + "s", magic_byte, ctrl_byte, seconds, nanoseconds,
                             length, data)
-        checksum = libscrc.crc32(frame) % (1 << 32)
+        checksum = zlib.crc32(frame) % (1 << 32)
         frame += struct.pack(self._FRAME_CRC_FORMAT, checksum)
         return frame
 
@@ -131,7 +130,7 @@ class RSCPUtils:
     def _check_crc_validity(self, crc, frame_data):
         if crc is not None:
             frame_data_without_crc = frame_data[:-struct.calcsize("<" + self._FRAME_CRC_FORMAT)]
-            calculated_crc = libscrc.crc32(frame_data_without_crc) % (1 << 32)
+            calculated_crc = zlib.crc32(frame_data_without_crc) % (1 << 32)
             if calculated_crc != crc:
                 raise RSCPFrameError("CRC32 not valid", logger)
 
