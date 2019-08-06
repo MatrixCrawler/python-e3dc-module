@@ -20,7 +20,7 @@ class RSCPUtils:
     def __init__(self):
         self.rscp_lib = RSCPLib()
 
-    def encode_frame(self, data):
+    def encode_frame(self, data: bytes) -> bytes:
         magic_byte = self._endian_swap_uint16(0xe3dc)
         ctrl_byte = self._endian_swap_uint16(0x11)
         current_time = time.time()
@@ -33,36 +33,36 @@ class RSCPUtils:
         frame += struct.pack(self._FRAME_CRC_FORMAT, checksum)
         return frame
 
-    def encode_data(self, payload: tuple):
-        tag_name = payload[0]
-        type_name = payload[1]
-        data = payload[2]
+    def encode_data(self, payload: RSCPDTO) -> bytes:
         pack_format = ""
-        tag_hex_code = self.rscp_lib.get_hex_code(tag_name)
-        type_hex_code = self.rscp_lib.get_data_type_hex(type_name)
+        tag_hex_code = self.rscp_lib.get_hex_code(payload.tag)
+        type_hex_code = self.rscp_lib.get_data_type_hex(payload.type)
         data_header_length = struct.calcsize(self._DATA_HEADER_FORMAT)
-        if type_name == "None":
+        if payload.type == "None":
             return struct.pack(self._DATA_HEADER_FORMAT, tag_hex_code, type_hex_code, 0)
-        elif type_name == "Timestamp":
-            timestamp = int(data / 1000)
-            milliseconds = (data - timestamp * 1000) * 1e6
+        elif payload.type == "Timestamp":
+            timestamp = int(payload.data / 1000)
+            milliseconds = (payload.data - timestamp * 1000) * 1e6
             high = timestamp >> 32
             low = timestamp & 0xffffffff
             length = struct.calcsize("iii") - data_header_length
             return struct.pack("iii", tag_hex_code, type_hex_code, length, high, low, milliseconds)
-        elif type_name == "Container":
-            if isinstance(data, list):
+        elif payload.type == "Container":
+            if isinstance(payload.data, list):
                 new_data = b''
-                for data_chunk in data:
-                    new_data += self.encode_data(data_chunk[0], data_chunk[1], data_chunk[2])
-                data = new_data
-                pack_format += str(len(data)) + self.rscp_lib.data_types_variable[type_name]
-        elif type_name in self.rscp_lib.data_types_fixed:
-            pack_format += self.rscp_lib.data_types_fixed[type_name]
-        elif type_name in self.rscp_lib.data_types_variable:
-            pack_format += str(len(data)) + self.rscp_lib.data_types_variable[type_name]
+                for data_chunk in payload.data:
+                    new_data += self.encode_data(RSCPDTO(data_chunk[0], data_chunk[1], data_chunk[2], None))
+                payload.data = new_data
+                pack_format += str(len(payload.data)) + self.rscp_lib.data_types_variable[payload.type]
+        elif payload.type in self.rscp_lib.data_types_fixed:
+            pack_format += self.rscp_lib.data_types_fixed[payload.type]
+        elif payload.type in self.rscp_lib.data_types_variable:
+            pack_format += str(len(payload.data)) + self.rscp_lib.data_types_variable[payload.type]
 
-    def _decode_frame(self, frame_data):
+        data_length = struct.calcsize(pack_format) - data_header_length
+        return struct.pack(pack_format, tag_hex_code, type_hex_code, data_length, payload.data)
+
+    def _decode_frame(self, frame_data) -> tuple:
         """
 
         :param frame_data:
@@ -128,24 +128,12 @@ class RSCPUtils:
         value = struct.unpack(data_format, data[data_header_size:data_header_size + struct.calcsize(data_format)])[0]
         return RSCPDTO(data_tag_name, data_type_name, value, data_header_size + struct.calcsize(data_format))
 
-    def _check_crc_validity(self, crc, frame_data):
+    def _check_crc_validity(self, crc: str, frame_data: bytes):
         if crc is not None:
             frame_data_without_crc = frame_data[:-struct.calcsize("<" + self._FRAME_CRC_FORMAT)]
             calculated_crc = zlib.crc32(frame_data_without_crc) % (1 << 32)
             if calculated_crc != crc:
                 raise RSCPFrameError("CRC32 not valid", logger)
 
-    def _endian_swap_uint16(self, val):
+    def _endian_swap_uint16(self, val: int) -> tuple:
         return struct.unpack("<H", struct.pack(">H", val))[0]
-
-    def pad_data(self, data_string, block_size):
-        """
-
-        :type block_size: int
-        :type data_string: bytes
-        """
-        data_string_length = len(data_string)
-        if data_string_length % block_size == 0:
-            return data_string
-        needed_length = int(block_size * math.ceil(float(data_string_length) / block_size))
-        return data_string.ljust(needed_length, bytes("\x00", encoding="latin_1"))
