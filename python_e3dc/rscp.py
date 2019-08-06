@@ -20,11 +20,14 @@ class RSCP:
         self.ip = ip
         self.socket = None
 
-    def send_request(self, message: RSCPDTO):
-        self._send(message)
+    def send_request(self, message: RSCPDTO) -> RSCPDTO:
+        prepared_data = self.rscp_utils.encode_frame(self.rscp_utils.encode_data(message))
+        encrypted_data = self.encrypt_decrypt.encrypt(prepared_data)
+        self.socket.send(encrypted_data)
         response = self._receive()
         if response[1] == 'Error':
             raise (RSCPCommunicationError(None, logger))
+        return response
 
     def connect(self):
         if self.socket is not None:
@@ -42,11 +45,6 @@ class RSCP:
     def _disconnect(self):
         self.socket.close()
         self.socket = None
-
-    def _send(self, message: RSCPDTO):
-        prepared_data = self.rscp_utils.encode_frame(self.rscp_utils.encode_data(message))
-        encrypted_data = self.encrypt_decrypt.encrypt(prepared_data)
-        self.socket.send(encrypted_data)
 
     def _receive(self) -> RSCPDTO:
         data = self.socket.recv(self.BUFFER_SIZE)

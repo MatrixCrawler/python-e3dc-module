@@ -7,6 +7,8 @@ import pytest
 from python_e3dc._rscp_exceptions import RSCPFrameError
 from python_e3dc._rscp_lib import RSCPLib
 from python_e3dc._rscp_utils import RSCPUtils
+from python_e3dc.rscp_tag import RSCPTag
+from python_e3dc.rscp_type import RSCPType
 
 
 def test_decode_data_returns_correct_value():
@@ -21,8 +23,8 @@ def test_decode_data_returns_correct_value():
     complete_hex = hex_ + int.to_bytes(checksum, length=4, byteorder=sys.byteorder).hex()
     rscp_dto = rscp.decode_data(bytes.fromhex(complete_hex))
     rscp_lib = RSCPLib()
-    assert rscp_dto.tag == rscp_lib.get_data_tag_name(0x01000001)
-    assert rscp_dto.type == rscp_lib.get_data_type_name(0x07)
+    assert rscp_dto.tag == RSCPTag(0x01000001).name
+    assert rscp_dto.type == RSCPType(0x07).name
     assert rscp_dto.data == 98562
 
 

@@ -7,6 +7,8 @@ import zlib
 from python_e3dc._rscp_dto import RSCPDTO
 from python_e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
 from python_e3dc._rscp_lib import RSCPLib
+from python_e3dc.rscp_tag import RSCPTag
+from python_e3dc.rscp_type import RSCPType
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +37,9 @@ class RSCPUtils:
 
     def encode_data(self, payload: RSCPDTO) -> bytes:
         pack_format = ""
-        tag_hex_code = self.rscp_lib.get_hex_code(payload.tag)
-        type_hex_code = self.rscp_lib.get_data_type_hex(payload.type)
+        RSCPTag[payload.tag].value()
+        tag_hex_code = RSCPTag[payload.tag].value()
+        type_hex_code = RSCPType[payload.type].value()
         data_header_length = struct.calcsize(self._DATA_HEADER_FORMAT)
         if payload.type == "None":
             return struct.pack(self._DATA_HEADER_FORMAT, tag_hex_code, type_hex_code, 0)
@@ -98,8 +101,8 @@ class RSCPUtils:
         data_header_size = struct.calcsize(self._DATA_HEADER_FORMAT)
         data_tag, data_type, data_length = struct.unpack(self._DATA_HEADER_FORMAT,
                                                          data[:data_header_size])
-        data_tag_name = self.rscp_lib.get_data_tag_name(data_tag)
-        data_type_name = self.rscp_lib.get_data_type_name(data_type)
+        data_tag_name = RSCPTag(data_tag).name
+        data_type_name = RSCPType(data_type).name
 
         # Check the data type name to handle the values accordingly
         if data_type_name == "Container":

@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from py3rijndael import RijndaelCbc, ZeroPadding
 
@@ -23,7 +24,7 @@ class RSCPEncryptDecrypt:
         self.cbc = RijndaelCbc(key=self.key, iv=self.init_vector, padding=ZeroPadding(self.BLOCK_SIZE),
                                block_size=self.BLOCK_SIZE)
 
-    def encrypt(self, plain_data: str) -> bytes:
+    def encrypt(self, plain_data: Union[str, bytes]) -> bytes:
         if isinstance(plain_data, str):
             plain_data = bytes(plain_data, encoding="latin_1")
 
