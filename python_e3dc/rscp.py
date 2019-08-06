@@ -5,6 +5,8 @@ from python_e3dc._rscp_dto import RSCPDTO
 from python_e3dc._rscp_encrypt_decrypt import RSCPEncryptDecrypt
 from python_e3dc._rscp_exceptions import RSCPAuthenticationError, RSCPCommunicationError
 from python_e3dc._rscp_utils import RSCPUtils
+from python_e3dc.rscp_tag import RSCPTag
+from python_e3dc.rscp_type import RSCPType
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +22,8 @@ class RSCP:
         self.ip = ip
         self.socket = None
 
-    def send_request(self, message: RSCPDTO) -> RSCPDTO:
-        prepared_data = self.rscp_utils.encode_frame(self.rscp_utils.encode_data(message))
+    def send_request(self, rscp_dto: RSCPDTO) -> RSCPDTO:
+        prepared_data = self.rscp_utils.encode_frame(self.rscp_utils.encode_data(rscp_dto))
         encrypted_data = self.encrypt_decrypt.encrypt(prepared_data)
         self.socket.send(encrypted_data)
         response = self._receive()
@@ -34,7 +36,7 @@ class RSCP:
             pass
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.ip, self.PORT))
-        rscp_dto = RSCPDTO('RSCP_REQ_AUTHENTICATION', 'Container',
+        rscp_dto = RSCPDTO(RSCPTag.RSCP_REQ_AUTHENTICATION, RSCPType.Container,
                            [('RSCP_AUTHENTICATION_USER', 'CString', self.username),
                             ('RSCP_AUTHENTICATION_PASSWORD', 'CString', self.password)], None)
         result = self.send_request(rscp_dto)
