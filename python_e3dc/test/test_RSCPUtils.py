@@ -19,11 +19,11 @@ def test_decode_data_returns_correct_value():
            "01000001" + "07" + struct.pack("<H", 4).hex() + struct.pack("<I", 98562).hex()
     checksum = zlib.crc32(bytes.fromhex(hex_))
     complete_hex = hex_ + int.to_bytes(checksum, length=4, byteorder=sys.byteorder).hex()
-    result, size = rscp.decode_data(bytes.fromhex(complete_hex))
+    rscp_dto = rscp.decode_data(bytes.fromhex(complete_hex))
     rscp_lib = RSCPLib()
-    assert result[0] == rscp_lib.get_data_tag_name(0x01000001)
-    assert result[1] == rscp_lib.get_data_type_name(0x07)
-    assert result[2] == 98562
+    assert rscp_dto.tag == rscp_lib.get_data_tag_name(0x01000001)
+    assert rscp_dto.type == rscp_lib.get_data_type_name(0x07)
+    assert rscp_dto.data == 98562
 
 
 def test_decode_data_raises_checksum_exception():

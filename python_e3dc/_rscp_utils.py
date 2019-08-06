@@ -4,6 +4,7 @@ import struct
 import time
 import zlib
 
+from python_e3dc._rscp_dto import RSCPDTO
 from python_e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
 from python_e3dc._rscp_lib import RSCPLib
 
@@ -88,7 +89,7 @@ class RSCPUtils:
         timestamp = seconds + float(nanoseconds) / 1000
         return data, timestamp
 
-    def decode_data(self, data):
+    def decode_data(self, data: bytes) -> RSCPDTO:
         magic_byte = struct.unpack(self._MAGIC_CHECK_FORMAT, data[:struct.calcsize(self._MAGIC_CHECK_FORMAT)])[0]
         if magic_byte == 0xe3dc:
             decode_frame_result = self._decode_frame(data)
@@ -108,15 +109,15 @@ class RSCPUtils:
                 inner_data, used_length = self.decode_data(data[current_byte:])
                 current_byte += used_length
                 container_data.append(inner_data)
-            return (data_tag_name, data_type_name, container_data), current_byte
+            return RSCPDTO(data_tag_name, data_type_name, container_data, current_byte)
         elif data_type_name == "Timestamp":
             data_format = "<iii"
             high, low, ms = struct.unpack(data_format,
                                           data[data_header_size:data_header_size + struct.calcsize(data_format)])
             timestamp = float(high + low) + (float(ms) * 1e-9)
-            return (data_tag_name, data_type_name, timestamp), data_header_size + struct.calcsize(data_format)
+            return RSCPDTO(data_tag_name, data_type_name, timestamp, data_header_size + struct.calcsize(data_format))
         elif data_type_name == "None":
-            return (data_tag_name, data_type_name, None), data_header_size
+            return RSCPDTO(data_tag_name, data_type_name, None, data_header_size)
         elif data_type_name in self.rscp_lib.data_types_fixed:
             data_format = "<" + self.rscp_lib.data_types_fixed[data_type_name]
         elif data_type_name in self.rscp_lib.data_types_variable:
@@ -125,7 +126,7 @@ class RSCPUtils:
             raise RSCPDataError("Unknown data type", logger)
 
         value = struct.unpack(data_format, data[data_header_size:data_header_size + struct.calcsize(data_format)])[0]
-        return (data_tag_name, data_type_name, value), data_header_size + struct.calcsize(data_format)
+        return RSCPDTO(data_tag_name, data_type_name, value, data_header_size + struct.calcsize(data_format))
 
     def _check_crc_validity(self, crc, frame_data):
         if crc is not None:

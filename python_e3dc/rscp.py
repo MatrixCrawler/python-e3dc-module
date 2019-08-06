@@ -1,6 +1,7 @@
 import logging
 import socket
 
+from python_e3dc._rscp_dto import RSCPDTO
 from python_e3dc._rscp_encrypt_decrypt import RSCPEncryptDecrypt
 from python_e3dc._rscp_exceptions import RSCPAuthenticationError, RSCPCommunicationError
 from python_e3dc._rscp_utils import RSCPUtils
@@ -10,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class RSCP:
     PORT = 5033
+    BUFFER_SIZE = 1024 * 32
 
     def __init__(self, username, password, ip, key):
         self.password = password
@@ -18,7 +20,7 @@ class RSCP:
         self.ip = ip
         self.socket = None
 
-    def send_request(self, message: tuple):
+    def send_request(self, message: RSCPDTO):
         self._send(message)
         response = self._receive()
         if response[1] == 'Error':
@@ -29,9 +31,10 @@ class RSCP:
             pass
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.ip, self.PORT))
-        result = self.send_request(('RSCP_REQ_AUTHENTICATION', 'Container',
-                                    [('RSCP_AUTHENTICATION_USER', 'CString', self.username),
-                                     ('RSCP_AUTHENTICATION_PASSWORD', 'CString', self.password)]))
+        rscp_dto = RSCPDTO('RSCP_REQ_AUTHENTICATION', 'Container',
+                           [('RSCP_AUTHENTICATION_USER', 'CString', self.username),
+                            ('RSCP_AUTHENTICATION_PASSWORD', 'CString', self.password)], None)
+        result = self.send_request(rscp_dto)
         if result[1] == 'Error':
             self._disconnect()
             raise RSCPAuthenticationError("Invalid username or password", logger)
@@ -40,8 +43,14 @@ class RSCP:
         self.socket.close()
         self.socket = None
 
-    def _send(self, message):
-        rscp_utils = RSCPUtils()
-        prepared_data = rscp_utils.encode_frame(rscp_utils.encode_data(message))
+    def _send(self, message: RSCPDTO):
+        prepared_data = self.rscp_utils.encode_frame(self.rscp_utils.encode_data(message))
         encrypted_data = self.encrypt_decrypt.encrypt(prepared_data)
         self.socket.send(encrypted_data)
+
+    def _receive(self) -> RSCPDTO:
+        data = self.socket.recv(self.BUFFER_SIZE)
+        self.rscp_utils = RSCPUtils()
+
+        rscp_dto = self.rscp_utils.decode_data(self.encrypt_decrypt.decrypt(data))
+        return rscp_dto
