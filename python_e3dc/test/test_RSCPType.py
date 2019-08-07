@@ -9,3 +9,8 @@ def test_rscptype_value_is_returned():
 def test_rscptype_name_is_returned():
     result = RSCPType(0x00).name
     assert result == 'Nil'
+
+
+def test_rscptype_mapping_is_returned():
+    result = RSCPType(0x00).mapping
+    assert result is None

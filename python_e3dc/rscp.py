@@ -21,13 +21,17 @@ class RSCP:
         self.encrypt_decrypt = RSCPEncryptDecrypt(key)
         self.ip = ip
         self.socket = None
+        self.rscp_utils = RSCPUtils()
 
     def send_request(self, rscp_dto: RSCPDTO) -> RSCPDTO:
-        prepared_data = self.rscp_utils.encode_frame(self.rscp_utils.encode_data(rscp_dto))
+        if self.socket is None:
+            self.connect()
+        encode_data = self.rscp_utils.encode_data(rscp_dto)
+        prepared_data = self.rscp_utils.encode_frame(encode_data)
         encrypted_data = self.encrypt_decrypt.encrypt(prepared_data)
         self.socket.send(encrypted_data)
         response = self._receive()
-        if response[1] == 'Error':
+        if response.type == RSCPType.Error:
             raise (RSCPCommunicationError(None, logger))
         return response
 
@@ -37,10 +41,10 @@ class RSCP:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.ip, self.PORT))
         rscp_dto = RSCPDTO(RSCPTag.RSCP_REQ_AUTHENTICATION, RSCPType.Container,
-                           [('RSCP_AUTHENTICATION_USER', 'CString', self.username),
-                            ('RSCP_AUTHENTICATION_PASSWORD', 'CString', self.password)], None)
+                           [(RSCPTag.RSCP_AUTHENTICATION_USER, RSCPType.CString, self.username),
+                            (RSCPTag.RSCP_AUTHENTICATION_PASSWORD, RSCPType.CString, self.password)], None)
         result = self.send_request(rscp_dto)
-        if result[1] == 'Error':
+        if result.type == RSCPType.Error:
             self._disconnect()
             raise RSCPAuthenticationError("Invalid username or password", logger)
 

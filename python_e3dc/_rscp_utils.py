@@ -6,7 +6,6 @@ import zlib
 
 from python_e3dc._rscp_dto import RSCPDTO
 from python_e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
-from python_e3dc._rscp_lib import RSCPLib
 from python_e3dc.rscp_tag import RSCPTag
 from python_e3dc.rscp_type import RSCPType
 
@@ -19,15 +18,12 @@ class RSCPUtils:
     _DATA_HEADER_FORMAT = "<IBH"
     _MAGIC_CHECK_FORMAT = ">H"
 
-    def __init__(self):
-        self.rscp_lib = RSCPLib()
-
     def encode_frame(self, data: bytes) -> bytes:
         magic_byte = self._endian_swap_uint16(0xe3dc)
         ctrl_byte = self._endian_swap_uint16(0x11)
         current_time = time.time()
         seconds = math.ceil(current_time)
-        nanoseconds = round((current_time - int(current_time) * 1000))
+        nanoseconds = round((current_time - int(current_time)) * 1000)
         length = len(data)
         frame = struct.pack(self._FRAME_HEADER_FORMAT + str(length) + "s", magic_byte, ctrl_byte, seconds, nanoseconds,
                             length, data)
@@ -36,30 +32,34 @@ class RSCPUtils:
         return frame
 
     def encode_data(self, rscp_dto: RSCPDTO) -> bytes:
-        pack_format = ""
+        pack_format = self._DATA_HEADER_FORMAT
         data_header_length = struct.calcsize(self._DATA_HEADER_FORMAT)
-        if rscp_dto.type == "None":
+        if rscp_dto.type == RSCPType.Nil:
             return struct.pack(self._DATA_HEADER_FORMAT, rscp_dto.tag.value, rscp_dto.type.value, 0)
-        elif rscp_dto.type == "Timestamp":
+        elif rscp_dto.type == RSCPType.Timestamp:
             timestamp = int(rscp_dto.data / 1000)
             milliseconds = (rscp_dto.data - timestamp * 1000) * 1e6
             high = timestamp >> 32
             low = timestamp & 0xffffffff
             length = struct.calcsize("iii") - data_header_length
             return struct.pack("iii", rscp_dto.tag.value, rscp_dto.type.value, length, high, low, milliseconds)
-        elif rscp_dto.type == "Container":
+        elif rscp_dto.type == RSCPType.Container:
             if isinstance(rscp_dto.data, list):
                 new_data = b''
                 for data_chunk in rscp_dto.data:
-                    new_data += self.encode_data(RSCPDTO(data_chunk[0], data_chunk[1], data_chunk[2], None))
-                rscp_dto.data = new_data
-                pack_format += str(len(rscp_dto.data)) + self.rscp_lib.data_types_variable[rscp_dto.type]
-        elif rscp_dto.type in self.rscp_lib.data_types_fixed:
-            pack_format += self.rscp_lib.data_types_fixed[rscp_dto.type]
-        elif rscp_dto.type in self.rscp_lib.data_types_variable:
-            pack_format += str(len(rscp_dto.data)) + self.rscp_lib.data_types_variable[rscp_dto.type]
+                    new_data += self.encode_data(data_chunk)
+                rscp_dto.set_data(new_data)
+                pack_format += str(len(rscp_dto.data)) + rscp_dto.type.mapping
+        elif rscp_dto.type.mapping != "s":
+            pack_format += rscp_dto.type.mapping
+        elif rscp_dto.type.mapping == "s":
+            # We do expect a string object. Make it to bytes array
+            rscp_dto.set_data(bytes(rscp_dto.data, encoding="latin_1"))
+            pack_format += str(len(rscp_dto.data)) + rscp_dto.type.mapping
 
         data_length = struct.calcsize(pack_format) - data_header_length
+        print("pack_format: " + pack_format)
+        print("data: " + str(rscp_dto.data))
         return struct.pack(pack_format, rscp_dto.tag.value, rscp_dto.type.value, data_length, rscp_dto.data)
 
     def _decode_frame(self, frame_data) -> tuple:
@@ -106,9 +106,10 @@ class RSCPUtils:
             container_data = []
             current_byte = data_header_size
             while current_byte < data_header_size + data_length:
-                inner_data, used_length = self.decode_data(data[current_byte:])
-                current_byte += used_length
-                container_data.append(inner_data)
+                # inner_data, used_length = self.decode_data(data[current_byte:])
+                inner_rscp_dto = self.decode_data(data[current_byte:])
+                current_byte += inner_rscp_dto.size
+                container_data.append(inner_rscp_dto)
             return RSCPDTO(data_tag, data_type, container_data, current_byte)
         elif data_type == RSCPType.Timestamp:
             data_format = "<iii"
@@ -116,16 +117,18 @@ class RSCPUtils:
                                           data[data_header_size:data_header_size + struct.calcsize(data_format)])
             timestamp = float(high + low) + (float(ms) * 1e-9)
             return RSCPDTO(data_tag, data_type, timestamp, data_header_size + struct.calcsize(data_format))
-        elif data_type == "None":
+        elif data_type.name == "Nil":
             return RSCPDTO(data_tag, data_type, None, data_header_size)
-        elif data_type.name in self.rscp_lib.data_types_fixed:
-            data_format = "<" + self.rscp_lib.data_types_fixed[data_type.name]
-        elif data_type.name in self.rscp_lib.data_types_variable:
-            data_format = "<" + str(data_length) + self.rscp_lib.data_types_variable[data_type.name]
+        elif data_type.mapping != "s":
+            data_format = "<" + data_type.mapping
+        elif data_type.mapping == "s":
+            data_format = "<" + str(data_length) + data_type.mapping
         else:
-            raise RSCPDataError("Unknown data type: "+str(data_type_hex), logger)
+            raise RSCPDataError("Unknown data type: " + str(data_type_hex), logger)
 
         value = struct.unpack(data_format, data[data_header_size:data_header_size + struct.calcsize(data_format)])[0]
+        if data_type.mapping == "s":
+            value = value.decode()
         return RSCPDTO(data_tag, data_type, value, data_header_size + struct.calcsize(data_format))
 
     def _check_crc_validity(self, crc: str, frame_data: bytes):
