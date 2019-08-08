@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
-from python_e3dc.rscp_tag import RSCPTag
-from python_e3dc.rscp_type import RSCPType
+from python_e3dc._rscp_tag import RSCPTag
+from python_e3dc._rscp_type import RSCPType
 
 
 class RSCPDTO:

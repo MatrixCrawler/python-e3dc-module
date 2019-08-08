@@ -6,8 +6,8 @@ import zlib
 
 from python_e3dc._rscp_dto import RSCPDTO
 from python_e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
-from python_e3dc.rscp_tag import RSCPTag
-from python_e3dc.rscp_type import RSCPType
+from python_e3dc._rscp_tag import RSCPTag
+from python_e3dc._rscp_type import RSCPType
 
 logger = logging.getLogger(__name__)
 

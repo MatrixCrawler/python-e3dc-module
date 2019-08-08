@@ -6,8 +6,8 @@ from python_e3dc._rscp_dto import RSCPDTO
 from python_e3dc._rscp_encrypt_decrypt import RSCPEncryptDecrypt
 from python_e3dc._rscp_exceptions import RSCPAuthenticationError, RSCPCommunicationError
 from python_e3dc._rscp_utils import RSCPUtils
-from python_e3dc.rscp_tag import RSCPTag
-from python_e3dc.rscp_type import RSCPType
+from python_e3dc._rscp_tag import RSCPTag
+from python_e3dc._rscp_type import RSCPType
 
 logger = logging.getLogger(__name__)
 

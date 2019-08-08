@@ -1,4 +1,4 @@
-from python_e3dc.rscp_tag import RSCPTag
+from python_e3dc._rscp_tag import RSCPTag
 
 
 def test_rscptag_value_is_returned():

@@ -6,8 +6,8 @@ import pytest
 
 from python_e3dc._rscp_exceptions import RSCPFrameError
 from python_e3dc._rscp_utils import RSCPUtils
-from python_e3dc.rscp_tag import RSCPTag
-from python_e3dc.rscp_type import RSCPType
+from python_e3dc._rscp_tag import RSCPTag
+from python_e3dc._rscp_type import RSCPType
 
 
 def test_decode_data_returns_correct_value():
@@ -52,26 +52,3 @@ def test_decode_frame_raises_no_exception():
     complete_hex = hex_ + int.to_bytes(checksum, length=4, byteorder=sys.byteorder).hex()
     data, timestamp = rscp._decode_frame(bytes.fromhex(complete_hex))
     assert timestamp == 1564827097.295
-
-
-def test_encode_frame_returns_correct_frame():
-    rscp = RSCPUtils()
-
-    # print(complete_hex)
-    # key = bytes("This is a key".ljust(32, "\xff"), encoding="latin_1")
-    # print(key.hex())
-    # print(len(key))
-    # init_vector = bytes(RSCP.BLOCKSIZE * '\xff', encoding="latin_1")
-    # print(init_vector.hex())
-    # print(len(init_vector))
-    # cbc = RijndaelCbc(key=key, iv=init_vector, padding=ZeroPadding(RSCP.BLOCKSIZE), block_size=RSCP.BLOCKSIZE)
-    # encres = cbc.encrypt(
-    #     rscp.pad_data(bytes.fromhex(complete_hex), RSCP.BLOCKSIZE))
-    # print(encres.hex())
-    # decres = cbc.decrypt(
-    #     rscp.pad_data(encres, RSCP.BLOCKSIZE))
-    # print(decres.hex())
-
-
-if __name__ == '__main__':
-    test_decode_frame_raises_no_exception()
