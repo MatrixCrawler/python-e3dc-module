@@ -1,5 +1,3 @@
-import json
-
 from python_e3dc._rscp_dto import RSCPDTO
 from python_e3dc._rscp_encrypt_decrypt import RSCPEncryptDecrypt
 from python_e3dc._rscp_utils import RSCPUtils
@@ -26,7 +24,6 @@ def test_encrypted_frame_can_be_decrypted():
     encrypted_data = encryptor.encrypt(framed_data)
     decrypted_data = encryptor.decrypt(encrypted_data)
     redecoded_data = rscp_utils.decode_data(decrypted_data)
-    # json.dumps(redecoded_data)
     assert redecoded_data.tag == RSCPTag.RSCP_REQ_AUTHENTICATION
     assert redecoded_data.type == RSCPType.Container
     assert len(redecoded_data.data) == 2
