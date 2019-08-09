@@ -3,6 +3,11 @@ from typing import Optional, Union
 from python_e3dc._rscp_tag import RSCPTag
 from python_e3dc._rscp_type import RSCPType
 
+"""
+This is a data wrapper to send and receive data to the e3dc.
+It consists of a tag, the type, the data and the size of the data.
+"""
+
 
 class RSCPDTO:
     def __init__(self, tag: RSCPTag, rscp_type: RSCPType = RSCPType.Nil, data: Union[list, float, str, None] = None,
