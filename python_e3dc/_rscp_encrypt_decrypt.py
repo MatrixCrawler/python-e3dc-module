@@ -33,5 +33,4 @@ class RSCPEncryptDecrypt:
 
     def decrypt(self, encrypted_data) -> bytes:
         decrypt = self.cbc.decrypt(encrypted_data)
-
         return decrypt
