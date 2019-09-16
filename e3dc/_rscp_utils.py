@@ -4,10 +4,10 @@ import struct
 import time
 import zlib
 
-from python_e3dc._rscp_dto import RSCPDTO
-from python_e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
-from python_e3dc._rscp_tag import RSCPTag
-from python_e3dc._rscp_type import RSCPType
+from e3dc._rscp_dto import RSCPDTO
+from e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
+from e3dc.rscp_tag import RSCPTag
+from e3dc.rscp_type import RSCPType
 
 logger = logging.getLogger(__name__)
 
@@ -58,8 +58,8 @@ class RSCPUtils:
             pack_format += str(len(rscp_dto.data)) + rscp_dto.type.mapping
 
         data_length = struct.calcsize(pack_format) - data_header_length
-        print("pack_format: " + pack_format)
-        print("data: " + str(rscp_dto.data))
+        logger.debug("pack_format: " + pack_format)
+        logger.debug("data: " + str(rscp_dto.data))
         return struct.pack(pack_format, rscp_dto.tag.value, rscp_dto.type.value, data_length, rscp_dto.data)
 
     def _decode_frame(self, frame_data) -> tuple:

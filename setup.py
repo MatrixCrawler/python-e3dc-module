@@ -1,22 +1,19 @@
-import os
+import setuptools
 
-from setuptools import setup
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
-
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-
-setup(
-    name='python-e3dc',
-    version='0.0.1',
-    packages=['python_e3dc'],
+setuptools.setup(
+    name='e3dc',
+    version='0.0.3',
+    packages=setuptools.find_packages(),
     url='https://www.github.com/python-e3dc',
     license='MIT',
     author='J. Brunswicker',
     author_email='johannes.brunswicker@gmail.com',
     description='',
-    long_description=read('README.md'),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     install_requires=['py3rijndael', 'pytest'],
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",

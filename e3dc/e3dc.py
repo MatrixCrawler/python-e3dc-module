@@ -2,12 +2,12 @@ import logging
 import socket
 from typing import Union
 
-from python_e3dc._rscp_dto import RSCPDTO
-from python_e3dc._rscp_encrypt_decrypt import RSCPEncryptDecrypt
-from python_e3dc._rscp_exceptions import RSCPAuthenticationError, RSCPCommunicationError
-from python_e3dc._rscp_tag import RSCPTag
-from python_e3dc._rscp_type import RSCPType
-from python_e3dc._rscp_utils import RSCPUtils
+from e3dc._rscp_dto import RSCPDTO
+from e3dc._rscp_encrypt_decrypt import RSCPEncryptDecrypt
+from e3dc._rscp_exceptions import RSCPAuthenticationError, RSCPCommunicationError
+from e3dc.rscp_tag import RSCPTag
+from e3dc.rscp_type import RSCPType
+from e3dc._rscp_utils import RSCPUtils
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +67,7 @@ class E3DC:
         self.socket.send(encrypted_data)
         response = self._receive()
         if response.type == RSCPType.Error:
+            logger.error("Error type returned")
             raise (RSCPCommunicationError(None, logger))
         if not keep_connection_alive:
             self._disconnect()
@@ -78,9 +79,9 @@ class E3DC:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((self.ip, self.PORT))
             rscp_dto = RSCPDTO(RSCPTag.RSCP_REQ_AUTHENTICATION, RSCPType.Container,
-                               [(RSCPTag.RSCP_AUTHENTICATION_USER, RSCPType.CString, self.username),
-                                (RSCPTag.RSCP_AUTHENTICATION_PASSWORD, RSCPType.CString, self.password)], None)
-            result = self.send_request(rscp_dto)
+                               [RSCPDTO(RSCPTag.RSCP_AUTHENTICATION_USER, RSCPType.CString, self.username),
+                                RSCPDTO(RSCPTag.RSCP_AUTHENTICATION_PASSWORD, RSCPType.CString, self.password)], None)
+            result = self.send_request(rscp_dto, True)
             if result.type == RSCPType.Error:
                 self._disconnect()
                 raise RSCPAuthenticationError("Invalid username or password", logger)
@@ -93,7 +94,11 @@ class E3DC:
     def _receive(self) -> RSCPDTO:
         logger.info("Waiting for response from " + str(self.ip))
         data = self.socket.recv(self.BUFFER_SIZE)
+        if len(data) == 0:
+            self.socket.close()
+            raise RSCPCommunicationError("Did not receive data from e3dc", logger)
         self.rscp_utils = RSCPUtils()
         decrypted_data = self.encrypt_decrypt.decrypt(data)
         rscp_dto = self.rscp_utils.decode_data(decrypted_data)
+        logger.debug("Received DTO Type: " + rscp_dto.type.name + ", DTO Tag: " + rscp_dto.tag.name)
         return rscp_dto

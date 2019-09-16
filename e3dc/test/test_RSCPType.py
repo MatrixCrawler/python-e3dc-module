@@ -1,4 +1,4 @@
-from python_e3dc._rscp_type import RSCPType
+from e3dc.rscp_type import RSCPType
 
 
 def test_rscptype_value_is_returned():
