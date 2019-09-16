@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='e3dc',
-    version='0.0.3',
+    version='0.0.4',
     packages=setuptools.find_packages(),
     url='https://www.github.com/python-e3dc',
     license='MIT',

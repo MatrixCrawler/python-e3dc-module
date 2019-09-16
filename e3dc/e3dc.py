@@ -46,7 +46,6 @@ class E3DC:
         dto: RSCPDTO
         for dto in dto_list:
             responses.append(self.send_request(dto, True))
-        self._disconnect()
         return responses
 
     def send_request(self, payload: Union[RSCPDTO, RSCPTag], keep_connection_alive: bool = False) -> RSCPDTO:
