@@ -5,18 +5,18 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='e3dc',
-    version='0.0.4',
+    version='0.0.5',
     packages=setuptools.find_packages(),
-    url='https://www.github.com/python-e3dc',
+    url='https://www.github.com/python-e3dc-module',
     license='MIT',
     author='J. Brunswicker',
     author_email='johannes.brunswicker@gmail.com',
-    description='',
+    description='A Python library for querying E3/DC systems trough an RSCP connection.',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=['py3rijndael', 'pytest'],
+    install_requires=['py3rijndael'],
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 4 - Beta",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.7",
         "Topic :: Communications",

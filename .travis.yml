@@ -1,12 +1,16 @@
 language: python
 python:
-  - "3.6"
-  - "3.7"
-
-# command to install dependencies
+- '3.6'
+- '3.7'
 install:
-  - python setup.py install
-
-# command to run tests
+- pip install pytest
+- python setup.py install
 script:
-  - pytest
+- pytest
+deploy:
+  provider: pypi
+  user: MatrixCrawler
+  password:
+    secure: sExAytnUbbOnwnS3W/JJCjTn5gwwLpUz4/rTl1MPIlFMSn2s490j6f2ol69/7MD5vRlDeIkQvEReO4q84NYzodWMz0UkuCp9oqO1RoFKL7N3PDXjDU7P1pm+epn0FmCmicomtI+HfzGyerfc3zM4FNuikf3Je/XIwpCccHJ2ub2HT9v+WoHliDU5rTV5D0RQF0d/6EVi8FdYoj/mgZpb/AIp3SMdUUsAMBNSCbwQYLd9SNP1pvdbtW9OJGccpdkBlH6U4J5ZkC2hyNiDIOK4cqKIKQKCJsy1ixSDBx1AA/77C0AV8RWvZarY+LkkskDf8s1AHa120ttOX87bcGwVMmRtT/jbTSZ5psxckRJ1k/siuKAeYSE7cUZno4LOUjrKZkwobKPn6tP75U1SiYV0gfTSwH8gc9SmXFetNmQ2Hh/z4UJ+T8qBn6tTi5y6LiEtNvOsQwBjTUu6Z9Cp6o+zEfz83uee5qm7yD5ODI5rwTp1h9X5lN15ps/0fpfNRnh9rnChghlYbsSeWHQzEfML1WVUeUjlLvaUu35psJyqUge4P+J7qZfNSgyx7ChEtzrDBKWtHiLdZuK96VoMJIJltjsavKY8g0DjuClECUxiJo6rrgzqxaRqOHbJesdIlA4JBgW4qFcY3sQkD7ceTM/oDK0U/wR5sFVKxq3s8tT4GB0=
+  distribution: "sdist bdist_wheel"
+  skip_existing: true
