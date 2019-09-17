@@ -11,7 +11,7 @@ setuptools.setup(
     license='MIT',
     author='J. Brunswicker',
     author_email='johannes.brunswicker@gmail.com',
-    description='A Python library for querying E3/DC systems trough an RSCP connection.',
+    description='A Python library for querying E3/DC systems trough a RSCP connection.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=['py3rijndael'],
