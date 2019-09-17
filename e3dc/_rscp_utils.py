@@ -4,7 +4,7 @@ import struct
 import time
 import zlib
 
-from e3dc._rscp_dto import RSCPDTO
+from e3dc.rscp_dto import RSCPDTO
 from e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
 from e3dc.rscp_tag import RSCPTag
 from e3dc.rscp_type import RSCPType
@@ -38,11 +38,12 @@ class RSCPUtils:
             return struct.pack(self._DATA_HEADER_FORMAT, rscp_dto.tag.value, rscp_dto.type.value, 0)
         elif rscp_dto.type == RSCPType.Timestamp:
             timestamp = int(rscp_dto.data / 1000)
-            milliseconds = (rscp_dto.data - timestamp * 1000) * 1e6
+            milliseconds = int((rscp_dto.data - timestamp * 1000) * 1e6)
             high = timestamp >> 32
             low = timestamp & 0xffffffff
-            length = struct.calcsize("iii") - data_header_length
-            return struct.pack("iii", rscp_dto.tag.value, rscp_dto.type.value, length, high, low, milliseconds)
+            length = struct.calcsize(self._DATA_HEADER_FORMAT + "iii") - data_header_length
+            return struct.pack(self._DATA_HEADER_FORMAT + "iii", rscp_dto.tag.value, rscp_dto.type.value, length, high,
+                               low, milliseconds)
         elif rscp_dto.type == RSCPType.Container:
             if isinstance(rscp_dto.data, list):
                 new_data = b''

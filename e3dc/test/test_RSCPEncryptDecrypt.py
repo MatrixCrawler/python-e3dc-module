@@ -1,4 +1,4 @@
-from e3dc._rscp_dto import RSCPDTO
+from e3dc.rscp_dto import RSCPDTO
 from e3dc._rscp_encrypt_decrypt import RSCPEncryptDecrypt
 from e3dc._rscp_utils import RSCPUtils
 from e3dc.rscp_tag import RSCPTag
