@@ -1,4 +1,4 @@
-# python-e3dc [![Build Status](https://travis-ci.com/MatrixCrawler/python-e3dc-module.svg?token=sAxTLMta2moxv8TwsFJ2&branch=master)](https://travis-ci.com/MatrixCrawler/python-e3dc-module)
+# python-e3dc [![Build Status](https://travis-ci.com/MatrixCrawler/python-e3dc-module.svg?token=sAxTLMta2moxv8TwsFJ2&branch=master)](https://travis-ci.com/MatrixCrawler/python-e3dc-module) [![PyPI version](https://badge.fury.io/py/e3dc.svg)](https://badge.fury.io/py/e3dc)
 
 A Python library for querying [E3/DC](https://www.e3dc.com/en/) systems trough an RSCP connection.  
 This library aims to provide an interface to query an [E3/DC](https://www.e3dc.com/en/) solar power management system through the RSCP connection provided by the system.
