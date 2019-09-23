@@ -5,7 +5,7 @@ import time
 import zlib
 
 from e3dc.rscp_dto import RSCPDTO
-from e3dc._rscp_exceptions import RSCPFrameError, RSCPDataError
+from e3dc.rscp_exceptions import RSCPFrameError, RSCPDataError
 from e3dc.rscp_tag import RSCPTag
 from e3dc.rscp_type import RSCPType
 

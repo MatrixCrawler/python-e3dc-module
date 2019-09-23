@@ -4,7 +4,7 @@ import zlib
 
 import pytest
 
-from e3dc._rscp_exceptions import RSCPFrameError
+from e3dc.rscp_exceptions import RSCPFrameError
 from e3dc._rscp_utils import RSCPUtils
 from e3dc.rscp_tag import RSCPTag
 from e3dc.rscp_type import RSCPType
