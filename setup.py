@@ -7,7 +7,7 @@ setuptools.setup(
     name='e3dc',
     version='0.0.5',
     packages=setuptools.find_packages(),
-    url='https://www.github.com/python-e3dc-module',
+    url='https://www.github.com/MatrixCrawler/python-e3dc-module',
     license='MIT',
     author='J. Brunswicker',
     author_email='johannes.brunswicker@gmail.com',
